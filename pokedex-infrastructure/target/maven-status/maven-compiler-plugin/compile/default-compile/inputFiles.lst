@@ -1,0 +1,11 @@
+/Users/karencobos/Documents/Interview/pokedex-api/pokedex-infrastructure/src/main/java/com/karen/pokedex/infrastructure/util/EvolutionUtil.java
+/Users/karencobos/Documents/Interview/pokedex-api/pokedex-infrastructure/src/main/java/com/karen/pokedex/infrastructure/client/PokemonClient.java
+/Users/karencobos/Documents/Interview/pokedex-api/pokedex-infrastructure/src/main/java/com/karen/pokedex/infrastructure/dto/PokemonListResponse.java
+/Users/karencobos/Documents/Interview/pokedex-api/pokedex-infrastructure/src/main/java/com/karen/pokedex/infrastructure/exception/PokemonNotFoundException.java
+/Users/karencobos/Documents/Interview/pokedex-api/pokedex-infrastructure/src/main/java/com/karen/pokedex/infrastructure/dto/PokemonResult.java
+/Users/karencobos/Documents/Interview/pokedex-api/pokedex-infrastructure/src/main/java/com/karen/pokedex/infrastructure/adapter/PokemonAdapter.java
+/Users/karencobos/Documents/Interview/pokedex-api/pokedex-infrastructure/src/main/java/com/karen/pokedex/infrastructure/dto/PokemonSpeciesResponse.java
+/Users/karencobos/Documents/Interview/pokedex-api/pokedex-infrastructure/src/main/java/com/karen/pokedex/infrastructure/dto/PokemonEvolutionChainResponse.java
+/Users/karencobos/Documents/Interview/pokedex-api/pokedex-infrastructure/src/main/java/com/karen/pokedex/infrastructure/dto/EvolutionChainResponse.java
+/Users/karencobos/Documents/Interview/pokedex-api/pokedex-infrastructure/src/main/java/com/karen/pokedex/infrastructure/dto/PokemonDetailResponse.java
+/Users/karencobos/Documents/Interview/pokedex-api/pokedex-infrastructure/src/main/java/com/karen/pokedex/infrastructure/exception/GlobalExceptionHandler.java

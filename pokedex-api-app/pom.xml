@@ -1,0 +1,92 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.karen.pokedex</groupId>
+    <artifactId>pokedex-api-parent</artifactId>
+    <version>1.0.0</version>
+  </parent>
+
+  <artifactId>pokedex-api</artifactId>
+  <packaging>jar</packaging>
+
+ <build>
+  <plugins>
+    <plugin>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-maven-plugin</artifactId>
+      <version>${spring.boot.version}</version>
+      <executions>
+        <execution>
+          <goals>
+            <goal>repackage</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
+
+ <dependencies>
+  <!-- Web -->
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+  </dependency>
+
+  <!-- Aplicación -->
+  <dependency>
+    <groupId>com.karen.pokedex</groupId>
+    <artifactId>pokedex-application</artifactId>
+    <version>1.0.0</version>
+  </dependency>
+
+  <!-- Dominio (necesario para usar interfaces como PokemonService) -->
+  <dependency>
+    <groupId>com.karen.pokedex</groupId>
+    <artifactId>pokedex-domain</artifactId>
+    <version>1.0.0</version>
+  </dependency>
+
+  <!-- Feign Client -->
+  <dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+  </dependency>
+
+  <!-- Actuator -->
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+  </dependency>
+
+  <!-- OpenApi Swagger-->
+  <dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+    <version>2.5.0</version>
+  </dependency>
+
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-cache</artifactId>
+  </dependency>
+
+  <dependency>
+    <groupId>com.github.ben-manes.caffeine</groupId>
+    <artifactId>caffeine</artifactId>
+  </dependency>
+
+  <!-- Spring Boot Starter Test (JUnit, MockMvc, AssertJ, etc.) -->
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-test</artifactId>
+  <scope>test</scope>
+</dependency>
+
+</dependencies>
+</project>

@@ -1,0 +1,5 @@
+com/karen/pokedex/domain/service/PokemonService.class
+com/karen/pokedex/domain/model/PokemonDetailFull.class
+com/karen/pokedex/domain/model/PokemonBasicInfo$PokemonBasicInfoBuilder.class
+com/karen/pokedex/domain/model/PokemonBasicInfo.class
+com/karen/pokedex/domain/model/PokemonDetailFull$PokemonDetailFullBuilder.class
