@@ -14,6 +14,6 @@ public class SwaggerConfig {
             .info(new Info()
                 .title("Pokedex API")
                 .version("1.0.0")
-                .description("API to fetch paginated Pokémons with basic info"));
+                .description("API to fetch paginated Pokemons with basic info"));
     }
 }

@@ -43,7 +43,7 @@ jobs:
         run: |
           echo "Contenido de Dockerrun.aws.json:" && cat Dockerrun.aws.json
           if [ ! -s Dockerrun.aws.json ]; then
-            echo "❌ ERROR: Dockerrun.aws.json está vacío" && exit 1
+            echo "ERROR: Dockerrun.aws.json está vacío" && exit 1
           fi
 
       - name: Package Dockerrun.aws.json
@@ -73,7 +73,7 @@ jobs:
 
       - name: Esperar a que Elastic Beanstalk alcance estado OK
         run: |
-          echo "⌛ Esperando a que el entorno esté en estado OK..."
+          echo "Esperando a que el entorno esté en estado OK..."
           for i in {1..30}; do
             STATUS=$(aws elasticbeanstalk describe-environments \
               --application-name "$EB_APP_NAME" \
@@ -82,10 +82,10 @@ jobs:
               --output text)
             echo "Intento $i - Estado actual: $STATUS"
             if [ "$STATUS" == "Green" ]; then
-              echo "✅ Entorno saludable. Despliegue exitoso."
+              echo "Entorno saludable. Despliegue exitoso."
               exit 0
             fi
             sleep 15
           done
-          echo "❌ El entorno no alcanzó estado OK (Green) a tiempo."
+          echo "El entorno no alcanzó estado OK (Green) a tiempo."
           exit 1
