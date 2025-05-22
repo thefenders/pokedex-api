@@ -2,7 +2,7 @@
 
 Una API REST construida con Java y Spring Boot que consume la [PokeAPI](https://pokeapi.co/) y expone información detallada y optimizada de los Pokémons.
 
->  Desplegada en AWS con integración continua a través de GitHub Actions y contenedores Docker.
+> Desplegada en AWS con integración continua a través de GitHub Actions y contenedores Docker.
 
 ---
 
@@ -10,26 +10,26 @@ Una API REST construida con Java y Spring Boot que consume la [PokeAPI](https://
 
 Accede a la API en producción:
 
-** http://pokedex-api-docker-env-env.eba-8bsc8uns.us-east-1.elasticbeanstalk.com/swagger-ui/index.html**
+**http://pokedex-api-docker-env-env.eba-8bsc8uns.us-east-1.elasticbeanstalk.com/swagger-ui/index.html**
 
 ---
 
-##  Tecnologías utilizadas
+## Tecnologías utilizadas
 
-| Tecnología          | Rol principal                                      |
-|---------------------|----------------------------------------------------|
-| **Java 17**         | Lenguaje base                                      |
-| **Spring Boot 3.2** | Framework para construir la API                    |
-| **Maven**           | Sistema de construcción y gestión de dependencias |
-| **Feign Client**    | Cliente HTTP para consumir la PokeAPI             |
-| **Caffeine**        | Cache en memoria para mejorar el rendimiento      |
-| **Docker**          | Contenerización de la aplicación                   |
-| **Amazon ECR**      | Registro de imágenes Docker                        |
-| **Elastic Beanstalk** | Servicio de despliegue automatizado de AWS      |
-| **S3**              | Almacenamiento de artefactos de despliegue         |
-| **GitHub Actions**  | Automatización del pipeline CI/CD                 |
-| **Swagger/OpenAPI** | Documentación interactiva de endpoints REST       |
-| **JUnit 5 & Mockito** | Pruebas unitarias y de integración              |
+| Tecnología            | Rol principal                                      |
+|----------------------|----------------------------------------------------|
+| **Java 17**          | Lenguaje base                                      |
+| **Spring Boot 3.2**  | Framework para construir la API                    |
+| **Maven**            | Sistema de construcción y gestión de dependencias |
+| **Feign Client**     | Cliente HTTP para consumir la PokeAPI             |
+| **Caffeine**         | Cache en memoria para mejorar el rendimiento      |
+| **Docker**           | Contenerización de la aplicación                   |
+| **Amazon ECR**       | Registro de imágenes Docker                        |
+| **Elastic Beanstalk**| Servicio de despliegue automatizado de AWS        |
+| **S3**               | Almacenamiento de artefactos de despliegue        |
+| **GitHub Actions**   | Automatización del pipeline CI/CD                 |
+| **Swagger/OpenAPI**  | Documentación interactiva de endpoints REST       |
+| **JUnit 5 & Mockito**| Pruebas unitarias y de integración                 |
 
 ---
 
@@ -37,12 +37,12 @@ Accede a la API en producción:
 
 El proyecto sigue el enfoque de **Clean Architecture**, separando claramente la lógica de negocio, infraestructura y detalles de entrega:
 
-- `pokedex-domain`: Contiene las **entidades centrales** y **contratos** (interfaces) independientes del framework.
-- `pokedex-application`: Define los **casos de uso** y orquesta la lógica de aplicación, invocando servicios del dominio.
-- `pokedex-infrastructure`: Implementa la conexión con servicios externos (como APIs HTTP vía Feign), acceso a datos, y otras integraciones.
-- `pokedex-api-app`: Punto de entrada principal. Expone los **endpoints REST**, contiene la configuración de Spring Boot y la clase `main`.
-- 
-### Patrones de diseño aplicados
+- `pokedex-domain`: Contiene las **entidades centrales** y **contratos (interfaces)** independientes del framework.
+- `pokedex-application`: Define los **casos de uso** y orquesta la lógica de aplicación.
+- `pokedex-infrastructure`: Implementa integraciones externas como **Feign Clients**, acceso a datos, configuración, etc.
+- `pokedex-api-app`: Punto de entrada principal. Expone los **endpoints REST**, configura Spring Boot y ejecuta la aplicación.
+
+### 🧩 Patrones de diseño aplicados
 
 - **Clean Architecture** para desacoplar responsabilidades
 - **Builder Pattern** para construir objetos de respuesta de forma flexible
@@ -52,20 +52,18 @@ El proyecto sigue el enfoque de **Clean Architecture**, separando claramente la 
 
 ## Despliegue Automatizado en AWS Elastic Beanstalk
 
-El proyecto se despliega automáticamente a **Elastic Beanstalk** usando una imagen Docker personalizada y un workflow de GitHub Actions. A continuación se describe cómo funciona y cómo puedes replicarlo.
+El proyecto se despliega automáticamente a **Elastic Beanstalk** usando una imagen Docker personalizada y un workflow de GitHub Actions.
 
 ### Herramientas utilizadas
 
-- **AWS Elastic Beanstalk**: Orquestador del despliegue (usando plataforma Docker).
+- **AWS Elastic Beanstalk**: Orquestador del despliegue (plataforma Docker).
 - **Amazon ECR**: Almacena la imagen Docker generada.
-- **S3**: Guarda los paquetes `.zip` con el archivo `Dockerrun.aws.json`.
-- **GitHub Actions**: Automatiza la creación de imagen, subida al ECR, y despliegue.
+- **Amazon S3**: Guarda los paquetes `.zip` con el archivo `Dockerrun.aws.json`.
+- **GitHub Actions**: Automatiza el proceso CI/CD completo.
 
 ---
 
 ### Estructura del archivo `Dockerrun.aws.json`
-
-Este archivo se genera en la raíz del proyecto y contiene los metadatos para que Elastic Beanstalk sepa qué imagen Docker ejecutar.
 
 ```json
 {
@@ -81,6 +79,7 @@ Este archivo se genera en la raíz del proyecto y contiene los metadatos para qu
   ],
   "Logging": "/var/log/nginx"
 }
+```
 
 ## Despliegue automatizado (CI/CD)
 
@@ -95,11 +94,13 @@ Cada push a `main` ejecuta lo siguiente:
 ---
 
 Consideraciones
-	•	Se utiliza la plataforma Docker on 64bit Amazon Linux 2 en Beanstalk.
-	•	El workflow requiere secretos configurados en GitHub:
-	•	AWS_ACCESS_KEY_ID
-	•	AWS_SECRET_ACCESS_KEY
-	•	El repositorio ECR y el bucket S3 deben estar previamente creados.
+
+- Se utiliza la plataforma Docker on 64bit Amazon Linux 2 en Beanstalk.
+- El workflow requiere secretos configurados en GitHub.
+- AWS_ACCESS_KEY_ID.
+- AWS_SECRET_ACCESS_KEY.
+- El repositorio ECR y el bucket S3 deben estar previamente creados.
+
 
 ## Cómo correr el proyecto localmente
 
