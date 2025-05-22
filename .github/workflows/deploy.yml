@@ -10,7 +10,6 @@ env:
   ECR_REGISTRY: 319844024891.dkr.ecr.us-east-1.amazonaws.com
   ECR_REPOSITORY: pokedex-api
   IMAGE_TAG: latest
-  ZIP_NAME: deploy-${{ github.sha }}.zip
   EB_ENV_NAME: Pokedex-api-docker-env-env
   EB_APP_NAME: pokedex-api
   S3_BUCKET: pokedex-api-deployments
@@ -42,10 +41,13 @@ jobs:
         run: docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Package Dockerrun.aws.json
-        run: zip $ZIP_NAME Dockerrun.aws.json
+        run: zip deploy-${{ github.sha }}.zip Dockerrun.aws.json
 
       - name: Upload zip to S3
-        run: aws s3 cp $ZIP_NAME s3://$S3_BUCKET/$ZIP_NAME
+        run: aws s3 cp deploy-${{ github.sha }}.zip s3://$S3_BUCKET/deploy-${{ github.sha }}.zip
+
+      - name: Esperar 30 segundos para que Beanstalk procese la versión
+        run: sleep 30
 
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v21
@@ -56,31 +58,6 @@ jobs:
           environment_name: ${{ env.EB_ENV_NAME }}
           version_label: ${{ github.sha }}
           region: ${{ env.AWS_REGION }}
-          deployment_package: ${{ env.ZIP_NAME }}
+          deployment_package: deploy-${{ github.sha }}.zip
           existing_bucket_name: ${{ env.S3_BUCKET }}
-          wait_for_deployment: false  # ⚠️ Beanstalk se tarda en procesar
-
-      - name: Esperar que el entorno esté saludable
-        run: |
-          echo "⏳ Esperando que Elastic Beanstalk complete el deployment..."
-
-          for i in {1..20}; do
-            STATUS=$(aws elasticbeanstalk describe-environments \
-              --application-name $EB_APP_NAME \
-              --environment-names $EB_ENV_NAME \
-              --region $AWS_REGION \
-              --query "Environments[0].Health" \
-              --output text)
-
-            echo "⏱️ Intento $i - Estado actual: $STATUS"
-
-            if [[ "$STATUS" == "Green" || "$STATUS" == "Ok" ]]; then
-              echo "✅ Entorno saludable. Deployment exitoso."
-              exit 0
-            fi
-
-            sleep 15
-          done
-
-          echo "❌ El entorno no alcanzó estado saludable."
-          exit 1
+          wait_for_deployment: true
