@@ -1,39 +1,48 @@
-name: Docker Deploy to AWS Elastic Beanstalk
+name: Deploy Dockerized App to Elastic Beanstalk
 
 on:
   push:
     branches:
       - main
 
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: 319844024891.dkr.ecr.us-east-1.amazonaws.com
+  ECR_REPOSITORY: pokedex-api
+  IMAGE_TAG: ${{ github.sha }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_REGION: us-east-1
-      ECR_REGISTRY: 319844024891.dkr.ecr.us-east-1.amazonaws.com
-      ECR_REPOSITORY: pokedex-api
-      IMAGE_TAG: ${{ github.sha }}
-
     steps:
-      - name: Checkout código fuente
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Login to Amazon ECR
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and push Docker image
+      - name: Build Docker image
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+      
+      - name: Push Docker image to ECR
+        run: |
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Generar Dockerrun.aws.json
+      - name: Prepare Dockerrun.aws.json
         run: |
-          cat > Dockerrun.aws.json <<EOF
-          {
+          echo '{
             "AWSEBDockerrunVersion": "1",
             "Image": {
-              "Name": "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG",
+              "Name": "'$ECR_REGISTRY'/'$ECR_REPOSITORY':'$IMAGE_TAG'",
               "Update": "true"
             },
             "Ports": [
@@ -41,26 +50,23 @@ jobs:
                 "ContainerPort": "8080"
               }
             ]
-          }
-          EOF
+          }' > Dockerrun.aws.json
 
-      - name: Crear ZIP de despliegue
+      - name: Package deployment bundle
         run: zip -r deploy.zip Dockerrun.aws.json
 
-      - name: Subir ZIP a S3
-        run: aws s3 cp deploy.zip s3://pokedex-api-deployments/deploy-${{ github.sha }}.zip
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Upload to S3
+        run: |
+          aws s3 cp deploy.zip s3://pokedex-api-deployments/deploy-${{ github.sha }}.zip
 
-      - name: Desplegar a Elastic Beanstalk
+      - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v21
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: pokedex-api
           environment_name: Pokedex-api-docker-env-env
-          region: us-east-1
+          region: ${{ env.AWS_REGION }}
           version_label: ${{ github.sha }}
           deployment_package: deploy-${{ github.sha }}.zip
           existing_bucket_name: pokedex-api-deployments
