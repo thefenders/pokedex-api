@@ -16,7 +16,7 @@ env:
   S3_BUCKET: pokedex-api-deployments
 
 jobs:
-  deploy:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,25 +30,47 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Log in to Amazon ECR
+      - name: Login to Amazon ECR
         run: |
-          aws ecr get-login-password --region $AWS_REGION \
-          | docker login --username AWS --password-stdin $ECR_REGISTRY
+          aws ecr get-login-password --region $AWS_REGION | \
+          docker login --username AWS --password-stdin $ECR_REGISTRY
 
       - name: Build Docker image
         run: docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
 
-      - name: Push Docker image
+      - name: Push Docker image to ECR
         run: docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Package Dockerrun.aws.json
         run: zip $ZIP_NAME Dockerrun.aws.json
 
-      - name: Upload zip to S3 and wait
+      - name: Upload to S3
+        run: aws s3 cp $ZIP_NAME s3://$S3_BUCKET/$ZIP_NAME
+
+      - name: Create Elastic Beanstalk version
         run: |
-          aws s3 cp $ZIP_NAME s3://$S3_BUCKET/$ZIP_NAME
-          echo "Esperando 20 segundos para que Beanstalk registre la nueva version..."
-          sleep 20
+          aws elasticbeanstalk create-application-version \
+            --application-name $EB_APP_NAME \
+            --version-label ${{ github.sha }} \
+            --source-bundle S3Bucket=$S3_BUCKET,S3Key=$ZIP_NAME \
+            --region $AWS_REGION
+          
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Wait for version to be ready
+        run: |
+          echo "Esperando 60 segundos para que Beanstalk registre la versión..."
+          sleep 60
 
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v21
@@ -59,5 +81,4 @@ jobs:
           environment_name: ${{ env.EB_ENV_NAME }}
           version_label: ${{ github.sha }}
           region: ${{ env.AWS_REGION }}
-          deployment_package: deploy-${{ github.sha }}.zip
-          existing_bucket_name: ${{ env.S3_BUCKET }}
+          use_existing_version_if_available: true
