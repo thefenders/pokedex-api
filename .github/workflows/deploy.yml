@@ -22,10 +22,16 @@ jobs:
       - name: Checkout código fuente
         uses: actions/checkout@v3
 
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
         with:
-          region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR (manual)
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
 
       - name: Build Docker image
         run: |
@@ -53,13 +59,9 @@ jobs:
       - name: Crear archivo ZIP para Beanstalk
         run: zip $ZIP_NAME Dockerrun.aws.json
 
-      - name: Subir a S3 (manual upload a bucket opcional)
+      - name: Subir a S3
         run: |
           aws s3 cp $ZIP_NAME s3://pokedex-api-deployments/$ZIP_NAME
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
 
       - name: Desplegar a Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v21
