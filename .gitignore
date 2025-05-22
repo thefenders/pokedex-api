@@ -13,7 +13,6 @@
 
 # Docker
 .dockerignore
-Dockerrun.aws.json
 
 # GitHub Actions
 deploy/
