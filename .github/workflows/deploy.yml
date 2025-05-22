@@ -44,8 +44,11 @@ jobs:
       - name: Package Dockerrun.aws.json
         run: zip $ZIP_NAME Dockerrun.aws.json
 
-      - name: Upload zip to S3
-        run: aws s3 cp $ZIP_NAME s3://$S3_BUCKET/$ZIP_NAME
+      - name: Upload zip to S3 and wait
+        run: |
+          aws s3 cp $ZIP_NAME s3://$S3_BUCKET/$ZIP_NAME
+          echo "Esperando 20 segundos para que Beanstalk registre la nueva version..."
+          sleep 20
 
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v21
