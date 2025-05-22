@@ -88,5 +88,5 @@ jobs:
             echo "⏳ Aún no está procesada, esperando 15 segundos..."
             sleep 15
           done
-          echo "⛔ La versión nunca cambió a PROCESSED"
+          echo "La versión nunca cambió a PROCESSED"
           exit 1
