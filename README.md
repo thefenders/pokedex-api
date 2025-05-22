@@ -10,7 +10,7 @@ Una API REST construida con Java y Spring Boot que consume la [PokeAPI](https://
 
 Accede a la API en producción:
 
-**🔗 https://pokedex-api-docker-env-env.eba-8bsc8uns.us-east-1.elasticbeanstalk.com**
+**🔗 http://pokedex-api-docker-env-env.eba-8bsc8uns.us-east-1.elasticbeanstalk.com/swagger-ui/index.html**
 
 ---
 
