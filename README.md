@@ -42,7 +42,7 @@ El proyecto sigue el enfoque de **Clean Architecture**, separando claramente la 
 - `pokedex-infrastructure`: Implementa integraciones externas como **Feign Clients**, acceso a datos, configuración, etc.
 - `pokedex-api-app`: Punto de entrada principal. Expone los **endpoints REST**, configura Spring Boot y ejecuta la aplicación.
 
-### 🧩 Patrones de diseño aplicados
+### Patrones de diseño aplicados
 
 - **Clean Architecture** para desacoplar responsabilidades
 - **Builder Pattern** para construir objetos de respuesta de forma flexible
@@ -90,6 +90,7 @@ Cada push a `main` ejecuta lo siguiente:
 3. Empaqueta y sube a **S3**
 4. Despliega a **Elastic Beanstalk**
 5. Espera a que la nueva versión se procese correctamente
+6. Toda esta configuración se puede encontrar en la ruta .github/workflows/deploy.yml del proyecto
 
 ---
 
