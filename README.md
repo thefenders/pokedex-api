@@ -1,20 +1,20 @@
-# 📘 Pokedex API
+# Pokedex API
 
 Una API REST construida con Java y Spring Boot que consume la [PokeAPI](https://pokeapi.co/) y expone información detallada y optimizada de los Pokémons.
 
-> 🚀 Desplegada en AWS con integración continua a través de GitHub Actions y contenedores Docker.
+>  Desplegada en AWS con integración continua a través de GitHub Actions y contenedores Docker.
 
 ---
 
-## 🌍 URL pública
+## URL pública
 
 Accede a la API en producción:
 
-**🔗 http://pokedex-api-docker-env-env.eba-8bsc8uns.us-east-1.elasticbeanstalk.com/swagger-ui/index.html**
+** http://pokedex-api-docker-env-env.eba-8bsc8uns.us-east-1.elasticbeanstalk.com/swagger-ui/index.html**
 
 ---
 
-## ⚙️ Tecnologías utilizadas
+##  Tecnologías utilizadas
 
 | Tecnología          | Rol principal                                      |
 |---------------------|----------------------------------------------------|
@@ -33,17 +33,16 @@ Accede a la API en producción:
 
 ---
 
-## 🧱 Arquitectura del proyecto
+## Arquitectura del proyecto
 
 El proyecto sigue el enfoque de **Clean Architecture**, separando claramente la lógica de negocio, infraestructura y detalles de entrega:
 
-pokedex-api/
-├── pokedex-domain         # Entidades y lógica de negocio pura
-├── pokedex-application    # Casos de uso y servicios de aplicación
-├── pokedex-infrastructure # Implementaciones de Feign Clients y configuración
-├── pokedex-api-app        # Controllers REST y configuración de Spring Boot
-
-### 🧩 Patrones de diseño aplicados
+- `pokedex-domain`: Contiene las **entidades centrales** y **contratos** (interfaces) independientes del framework.
+- `pokedex-application`: Define los **casos de uso** y orquesta la lógica de aplicación, invocando servicios del dominio.
+- `pokedex-infrastructure`: Implementa la conexión con servicios externos (como APIs HTTP vía Feign), acceso a datos, y otras integraciones.
+- `pokedex-api-app`: Punto de entrada principal. Expone los **endpoints REST**, contiene la configuración de Spring Boot y la clase `main`.
+- 
+### Patrones de diseño aplicados
 
 - **Clean Architecture** para desacoplar responsabilidades
 - **Builder Pattern** para construir objetos de respuesta de forma flexible
@@ -51,7 +50,7 @@ pokedex-api/
 
 ---
 
-## 🚀 Despliegue automatizado (CI/CD)
+## Despliegue automatizado (CI/CD)
 
 Cada push a `main` ejecuta lo siguiente:
 
@@ -63,15 +62,15 @@ Cada push a `main` ejecuta lo siguiente:
 
 ---
 
-## 🧪 Cómo correr el proyecto localmente
+## Cómo correr el proyecto localmente
 
-### 🔧 Requisitos
+### Requisitos
 
 - Java 17
 - Maven
 - Docker (opcional, para ejecutar en contenedor)
 
-### ▶️ Ejecutar sin Docker
+### Ejecutar sin Docker
 
 ```bash
 # Clona el proyecto
