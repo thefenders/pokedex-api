@@ -1,1 +1,0 @@
-web: java -jar pokedex-api-1.0.0.jar
