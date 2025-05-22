@@ -1,4 +1,4 @@
-name: Deploy to AWS Elastic Beanstalk
+name: Docker Deploy to AWS Elastic Beanstalk
 
 on:
   push:
@@ -9,33 +9,49 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      AWS_REGION: us-east-1
+      ECR_REGISTRY: 319844024891.dkr.ecr.us-east-1.amazonaws.com
+      ECR_REPOSITORY: pokedex-api
+      IMAGE_TAG: ${{ github.sha }}
+
     steps:
       - name: Checkout código fuente
         uses: actions/checkout@v3
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build con Maven
-        run: mvn clean package -DskipTests
-
-      - name: Crear archivo zip de despliegue
+      - name: Build and push Docker image
         run: |
-          mkdir deploy
-          cp pokedex-api-app/target/pokedex-api-1.0.0.jar deploy/
-          echo "web: java -jar pokedex-api-1.0.0.jar" > deploy/Procfile
-          zip -j deploy.zip deploy/*
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Subir a S3
+      - name: Generar Dockerrun.aws.json
         run: |
-          aws s3 cp deploy.zip s3://pokedex-api-deployments/deploy-${{ github.sha }}.zip
+          cat > Dockerrun.aws.json <<EOF
+          {
+            "AWSEBDockerrunVersion": "1",
+            "Image": {
+              "Name": "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG",
+              "Update": "true"
+            },
+            "Ports": [
+              {
+                "ContainerPort": "8080"
+              }
+            ]
+          }
+          EOF
+
+      - name: Crear ZIP de despliegue
+        run: zip -r deploy.zip Dockerrun.aws.json
+
+      - name: Subir ZIP a S3
+        run: aws s3 cp deploy.zip s3://pokedex-api-deployments/deploy-${{ github.sha }}.zip
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-east-1
 
       - name: Desplegar a Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v21
@@ -44,7 +60,7 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: pokedex-api
           environment_name: Pokedex-api-docker-env-env
-          version_label: ${{ github.sha }}
           region: us-east-1
+          version_label: ${{ github.sha }}
           deployment_package: deploy-${{ github.sha }}.zip
           existing_bucket_name: pokedex-api-deployments
