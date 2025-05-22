@@ -50,6 +50,38 @@ El proyecto sigue el enfoque de **Clean Architecture**, separando claramente la 
 
 ---
 
+## Despliegue Automatizado en AWS Elastic Beanstalk
+
+El proyecto se despliega automáticamente a **Elastic Beanstalk** usando una imagen Docker personalizada y un workflow de GitHub Actions. A continuación se describe cómo funciona y cómo puedes replicarlo.
+
+### Herramientas utilizadas
+
+- **AWS Elastic Beanstalk**: Orquestador del despliegue (usando plataforma Docker).
+- **Amazon ECR**: Almacena la imagen Docker generada.
+- **S3**: Guarda los paquetes `.zip` con el archivo `Dockerrun.aws.json`.
+- **GitHub Actions**: Automatiza la creación de imagen, subida al ECR, y despliegue.
+
+---
+
+### Estructura del archivo `Dockerrun.aws.json`
+
+Este archivo se genera en la raíz del proyecto y contiene los metadatos para que Elastic Beanstalk sepa qué imagen Docker ejecutar.
+
+```json
+{
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "319844024891.dkr.ecr.us-east-1.amazonaws.com/pokedex-api:latest",
+    "Update": "true"
+  },
+  "Ports": [
+    {
+      "ContainerPort": "8080"
+    }
+  ],
+  "Logging": "/var/log/nginx"
+}
+
 ## Despliegue automatizado (CI/CD)
 
 Cada push a `main` ejecuta lo siguiente:
@@ -61,6 +93,13 @@ Cada push a `main` ejecuta lo siguiente:
 5. Espera a que la nueva versión se procese correctamente
 
 ---
+
+Consideraciones
+	•	Se utiliza la plataforma Docker on 64bit Amazon Linux 2 en Beanstalk.
+	•	El workflow requiere secretos configurados en GitHub:
+	•	AWS_ACCESS_KEY_ID
+	•	AWS_SECRET_ACCESS_KEY
+	•	El repositorio ECR y el bucket S3 deben estar previamente creados.
 
 ## Cómo correr el proyecto localmente
 
