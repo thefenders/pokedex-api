@@ -16,63 +16,73 @@ env:
   S3_BUCKET: pokedex-api-deployments
 
 jobs:
-  build-and-push:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout código fuente
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+      - name: Configurar credenciales de AWS
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
+      - name: Login en Amazon ECR
         run: |
-          aws ecr get-login-password --region $AWS_REGION | \
+          aws ecr get-login-password --region $AWS_REGION |
           docker login --username AWS --password-stdin $ECR_REGISTRY
 
-      - name: Build Docker image
+      - name: Construir imagen Docker
         run: docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
 
-      - name: Push Docker image to ECR
+      - name: Subir imagen Docker a ECR
         run: docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Package Dockerrun.aws.json
+      - name: Empaquetar Dockerrun.aws.json
         run: zip $ZIP_NAME Dockerrun.aws.json
 
-      - name: Upload to S3
+      - name: Subir ZIP a S3
         run: aws s3 cp $ZIP_NAME s3://$S3_BUCKET/$ZIP_NAME
 
-      - name: Create Elastic Beanstalk version
+      - name: Crear versión de aplicación en Elastic Beanstalk
         run: |
           aws elasticbeanstalk create-application-version \
             --application-name $EB_APP_NAME \
             --version-label ${{ github.sha }} \
             --source-bundle S3Bucket=$S3_BUCKET,S3Key=$ZIP_NAME \
             --region $AWS_REGION
-          
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
 
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Wait for version to be ready
+      - name: Esperar a que la versión esté procesada
         run: |
-          echo "Esperando 60 segundos para que Beanstalk registre la versión..."
-          sleep 60
+          echo "Esperando que Elastic Beanstalk procese la versión de aplicación..."
+          for i in {1..10}; do
+            status=$(aws elasticbeanstalk describe-application-versions \
+              --application-name $EB_APP_NAME \
+              --version-label ${{ github.sha }} \
+              --query "ApplicationVersions[0].Status" \
+              --output text \
+              --region $AWS_REGION)
 
-      - name: Deploy to Elastic Beanstalk
+            echo "Intento $i - Estado actual: $status"
+
+            if [ "$status" = "PROCESSED" ]; then
+              echo "✅ Versión procesada correctamente"
+              break
+            fi
+
+            if [ "$i" -eq 10 ]; then
+              echo "⛔ La versión nunca cambió a PROCESSED"
+              exit 1
+            fi
+
+            echo "⏳ Aún no está procesada, esperando 15 segundos..."
+            sleep 15
+          done
+
+      - name: Desplegar a Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v21
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -81,4 +91,6 @@ jobs:
           environment_name: ${{ env.EB_ENV_NAME }}
           version_label: ${{ github.sha }}
           region: ${{ env.AWS_REGION }}
-          use_existing_version_if_available: true
+          deployment_package: $ZIP_NAME
+          existing_bucket_name: ${{ env.S3_BUCKET }}
+          wait_for_deployment: true
