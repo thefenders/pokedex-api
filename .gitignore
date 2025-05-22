@@ -1,1 +1,34 @@
+# Build y empaquetado de Maven
+**/target/
+*.jar
+*.war
+*.ear
+
+# Archivos temporales del sistema
+.DS_Store
+*.log
+
+# Archivos ZIP y paquetes de despliegue
+*.zip
+
+# Docker
+Dockerfile
+.dockerignore
+Dockerrun.aws.json
+
+# GitHub Actions
+deploy/
+.github/deploy.yml
+
+# IntelliJ / Eclipse / VSCode
+.idea/
+*.iml
+*.ipr
+*.iws
 .vscode/
+.classpath
+.project
+.settings/
+
+# Informes de pruebas
+**/surefire-reports/
