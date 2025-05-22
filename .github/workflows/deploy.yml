@@ -27,7 +27,7 @@ jobs:
           mkdir deploy
           cp pokedex-api-app/target/pokedex-api-1.0.0.jar deploy/
           echo "web: java -jar pokedex-api-1.0.0.jar" > deploy/Procfile
-          zip -j deploy-${{ github.sha }}.zip deploy/*
+          zip -j deploy.zip deploy/*
 
       - name: Subir a S3
         run: |
