@@ -10,19 +10,18 @@ env:
   ECR_REGISTRY: 319844024891.dkr.ecr.us-east-1.amazonaws.com
   ECR_REPOSITORY: pokedex-api
   IMAGE_TAG: latest
+  EB_APP_NAME: pokedex-api-docker-env
   EB_ENV_NAME: Pokedex-api-docker-env-env
-  EB_APP_NAME: pokedex-api
   S3_BUCKET: pokedex-api-deployments
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+      - name: Set up AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -34,20 +33,31 @@ jobs:
           aws ecr get-login-password --region $AWS_REGION \
           | docker login --username AWS --password-stdin $ECR_REGISTRY
 
-      - name: Build Docker image
+      - name: Build Docker Image
         run: docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
 
-      - name: Push Docker image
+      - name: Push Docker Image
         run: docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
+      - name: Ensure Dockerrun has content
+        run: |
+          echo "Contenido de Dockerrun.aws.json:" && cat Dockerrun.aws.json
+          if [ ! -s Dockerrun.aws.json ]; then
+            echo "❌ ERROR: Dockerrun.aws.json está vacío" && exit 1
+          fi
+
       - name: Package Dockerrun.aws.json
-        run: zip deploy-${{ github.sha }}.zip Dockerrun.aws.json
+        run: |
+          ZIP_NAME=deploy-${{ github.sha }}.zip
+          zip -r $ZIP_NAME Dockerrun.aws.json
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
-      - name: Upload zip to S3
-        run: aws s3 cp deploy-${{ github.sha }}.zip s3://$S3_BUCKET/deploy-${{ github.sha }}.zip
+      - name: Upload ZIP to S3
+        run: |
+          aws s3 cp $ZIP_NAME s3://$S3_BUCKET/$ZIP_NAME
 
-      - name: Esperar 30 segundos para que Beanstalk procese la versión
-        run: sleep 30
+      - name: Wait for ZIP to propagate
+        run: sleep 15
 
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v21
@@ -60,4 +70,22 @@ jobs:
           region: ${{ env.AWS_REGION }}
           deployment_package: deploy-${{ github.sha }}.zip
           existing_bucket_name: ${{ env.S3_BUCKET }}
-          wait_for_deployment: true
+
+      - name: Esperar a que Elastic Beanstalk alcance estado OK
+        run: |
+          echo "⌛ Esperando a que el entorno esté en estado OK..."
+          for i in {1..30}; do
+            STATUS=$(aws elasticbeanstalk describe-environments \
+              --application-name "$EB_APP_NAME" \
+              --environment-names "$EB_ENV_NAME" \
+              --query "Environments[0].Health" \
+              --output text)
+            echo "Intento $i - Estado actual: $STATUS"
+            if [ "$STATUS" == "Green" ]; then
+              echo "✅ Entorno saludable. Despliegue exitoso."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "❌ El entorno no alcanzó estado OK (Green) a tiempo."
+          exit 1
