@@ -3,7 +3,7 @@ name: Deploy to AWS Elastic Beanstalk
 on:
   push:
     branches:
-      - main  # Puedes cambiarlo si usas otra rama
+      - main  # Cambia si tu rama principal tiene otro nombre
 
 jobs:
   deploy:
@@ -37,5 +37,7 @@ jobs:
           application_name: pokedex-api
           environment_name: Pokedex-api-docker-env-env
           version_label: ${{ github.sha }}
-          region: us-east-1  # Cambia si usaste otra región
+          region: us-east-1
           deployment_package: deploy.zip
+          s3_bucket: pokedex-api-deployments
+          s3_key: deploy-${{ github.sha }}.zip
