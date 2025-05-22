@@ -30,5 +30,5 @@ deploy/
 .project
 .settings/
 
-# Informes de pruebas
+# Informes de pruebas del proyecto
 **/surefire-reports/
