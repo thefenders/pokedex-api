@@ -42,7 +42,7 @@ jobs:
         run: docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Package Dockerrun.aws.json
-        run: zip $ZIP_NAME "${{ github.workspace }}/Dockerrun.aws.json"
+        run: zip -j $ZIP_NAME "${{ github.workspace }}/Dockerrun.aws.json"
 
       - name: Verifica contenido del Dockerrun dentro del zip
         run: unzip -p $ZIP_NAME Dockerrun.aws.json
