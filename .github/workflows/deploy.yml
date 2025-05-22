@@ -41,8 +41,11 @@ jobs:
       - name: Subir imagen Docker a ECR
         run: docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Empaquetar Dockerrun.aws.json
-        run: zip $ZIP_NAME Dockerrun.aws.json
+      - name: Package Dockerrun.aws.json
+        run: zip $ZIP_NAME "${{ github.workspace }}/Dockerrun.aws.json"
+
+      - name: Verifica contenido del Dockerrun dentro del zip
+        run: unzip -p $ZIP_NAME Dockerrun.aws.json
 
       - name: Subir ZIP a S3
         run: aws s3 cp $ZIP_NAME s3://$S3_BUCKET/$ZIP_NAME
